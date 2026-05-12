@@ -62,7 +62,7 @@ $ R = U / I $ <eq:ohm>
 ...
 
 #bibliography("references.bib",
-  style: "gost-r-7-0-5-2008-numeric",
+  style: "gost-r-705-2008-numeric",
   title: [Список использованных источников])
 
 #show: appendix

@@ -9,7 +9,7 @@ keywords = ["smk-sto-004", "mordgu", "ogarev", "lab-report", "russian", "report"
 categories = ["report"]
 disciplines = ["education"]
 compiler = "0.14.0"
-exclude = [".git", ".github", "standard.pdf", "AGENTS.md"]
+exclude = [".git", ".github", "standard.pdf", "AGENTS.md", "template/example.typ"]
 
 [template]
 path = "template"

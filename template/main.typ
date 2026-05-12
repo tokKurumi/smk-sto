@@ -79,7 +79,7 @@ $ R = U / I $ <eq:ohm>
 получены практические навыки сборки электрических схем и обработки
 экспериментальных данных.
 
-#bibliography("references.bib", style: "gost-r-7-0-5-2008-numeric",
+#bibliography("references.bib", style: "gost-r-705-2008-numeric",
   title: [Список использованных источников])
 
 #show: appendix
