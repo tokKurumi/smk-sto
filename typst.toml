@@ -1,0 +1,16 @@
+[package]
+name = "smk-sto-004"
+version = "0.1.0"
+entrypoint = "src/lib.typ"
+authors = ["tokKurumi"]
+license = "MIT"
+description = "Шаблон Typst для оформления отчётов о лабораторных работах по СМК СТО 004–2020 (МГУ им. Н.П. Огарёва)"
+keywords = ["smk-sto-004", "mordgu", "ogarev", "lab-report", "russian", "report"]
+categories = ["report"]
+disciplines = ["education"]
+compiler = "0.14.0"
+exclude = [".git", ".github", "standard.pdf", "AGENTS.md"]
+
+[template]
+path = "template"
+entrypoint = "main.typ"

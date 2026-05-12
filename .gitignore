@@ -1,0 +1,15 @@
+# Compiled output
+*.pdf
+!standard.pdf
+
+# Extracted text
+standard.txt
+
+# Render scratch
+temp-render/
+
+# Editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
