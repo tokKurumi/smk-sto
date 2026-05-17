@@ -84,10 +84,11 @@ rules will only fight the template:
   допускаются» — and overall the standard expects whole words).
 - Headings: numbered `1`, `1.1`, `1.1.1`, bold, indented by 1.25 cm,
   followed by one blank line; level-1 headings start a new page.
-- Structural headings (Содержание, Введение, Заключение, Список
-  использованных источников, Перечень сокращений и обозначений,
-  Термины и определения) are auto-detected, centered, uppercased and
-  un-numbered.
+- Structural headings (Введение, Заключение, Перечень сокращений и
+  обозначений, …) are marked with the `<s>` label — they're centered,
+  uppercased, un-numbered, and don't advance the chapter counter.
+  Auto-generated unnumbered headings (`#outline()`, `#bibliography(title: ...)`)
+  are styled the same way without needing the label.
 - Lists: marker «–», nested indent 1.25 cm.
 - Enums: «1)», «2)», … by default (СТО 8.1.5 examples).
 - Figure caption: «Рисунок N – Подпись», centered, below the figure.
@@ -111,14 +112,25 @@ automatic.
 === Пункт
 ```
 
-For structural sections, write the canonical title verbatim — the
-template will recognize and re-style it:
+For structural sections (Введение, Заключение, Перечень сокращений
+и обозначений, Термины и определения — anything that, per СТО, must be
+centered, uppercased, and excluded from chapter numbering), tag the
+heading with the `<s>` label:
 
 ```typst
-= Введение
+= Введение <s>
 ...
-= Заключение
+= Заключение <s>
 ```
+
+The label is the marker — the title text itself can be anything. The
+template will not match by title, so any heading you'd like to style
+this way just needs the `<s>` tag. The chapter counter is not advanced
+for these headings, so numbered chapters around them stay sequential.
+
+`#outline()` and `#bibliography(title: ...)` produce their own
+unnumbered level-1 heading, which is auto-styled the same way — you do
+not need to add `<s>` to them.
 
 ### Lists, enums, lettered items
 
@@ -222,12 +234,13 @@ Defaults set by the template: rounded rectangles, 0.5 pt black stroke,
 )
 ```
 
-(The title is auto-detected as a structural heading.)
+(The bibliography heading is unnumbered by Typst, so it's auto-styled
+as a structural heading — no `<s>` needed.)
 
 ### Appendices
 
 ```typst
-= Заключение
+= Заключение <s>
 ...
 
 #bibliography(...)
@@ -250,9 +263,9 @@ inside become «А.1», «А.2», «(А.1)», etc.
 - **Do not** add manual `#set page(...)`, `#set text(...)`, `#set par(...)`
   unless the user asks for a specific deviation. The template's defaults
   are the standard.
-- **Do not** number structural sections (Содержание, Введение,
-  Заключение, Список использованных источников) — they are by definition
-  non-numbered and the template handles them.
+- **Do not** number structural sections (Введение, Заключение, …) —
+  they are by definition non-numbered. Tag them with `<s>` and the
+  template handles the rest.
 - **Do not** add the title page manually — `lab-report` emits it.
 - **Do not** use em dash «—» for «Рисунок N – ...» / «Таблица N – ...»
   separators — the template already uses en dash «–» per the standard.

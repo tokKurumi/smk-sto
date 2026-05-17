@@ -3,16 +3,15 @@
 #import "constants.typ": (
   default-font, default-text-size, default-small-size,
   default-indent, default-margin, default-leading, default-spacing,
-  structural-headings,
 )
 #import "utils.typ": table-label
 
-#let structural-titles = structural-headings.values()
-
+// Структурный заголовок (Введение, Заключение, …) определяется отсутствием
+// нумерации. Пользователь помечает заголовок меткой `<s>` — её ниже
+// перехватывает `show <s>: set heading(numbering: none)`. Также сюда попадают
+// автогенерируемые заголовки `#outline` и `#bibliography(title: ...)`.
 #let is-structural-heading(it) = {
-  if it.level != 1 { return false }
-  if it.numbering != none { return false }
-  return it.body in structural-titles
+  it.level == 1 and it.numbering == none
 }
 
 #let smk-style(
@@ -63,6 +62,10 @@
 
   // Заголовки.
   set heading(numbering: "1.1 ", hanging-indent: 0pt)
+  // Метка `<s>` помечает заголовок как структурный (Введение, Заключение,
+  // и т. п.): такой `= Заголовок <s>` рендерится без номера, по центру,
+  // заглавными буквами, и не увеличивает счётчик глав.
+  show <s>: set heading(numbering: none)
   show heading: set text(size: text-size, weight: "bold")
   show heading: it => {
     set par(first-line-indent: 0pt, justify: false)
@@ -96,21 +99,23 @@
   // Содержание: номер раздела + название с заполнителем-точками + страница.
   // Приложения выводятся как «Приложение А Название».
   show outline: set par(first-line-indent: 0pt)
-  set outline(indent: indent, depth: 3, title: structural-headings.contents)
+  set outline(indent: indent, depth: 3)
   show outline.entry: it => context {
     let el = it.element
-    let is-app = (
-      el != none
-        and el.func() == heading
-        and el.supplement == [Приложение]
-        and el.level == 1
-    )
+    let is-heading-l1 = el != none and el.func() == heading and el.level == 1
+    let is-app = is-heading-l1 and el.supplement == [Приложение]
+    let is-structural = is-heading-l1 and el.numbering == none
     let fill = box(width: 1fr, repeat[.#h(2pt)])
     if is-app {
       let letter = numbering(el.numbering, ..counter(heading).at(el.location()))
       link(el.location(), it.indented(
         [Приложение #letter],
         el.body + h(0.5em) + fill + sym.space + it.page(),
+      ))
+    } else if is-structural {
+      link(el.location(), it.indented(
+        none,
+        upper(el.body) + h(0.5em) + fill + sym.space + it.page(),
       ))
     } else {
       it

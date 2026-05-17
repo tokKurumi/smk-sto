@@ -5,7 +5,6 @@
   default-font, default-text-size, default-small-size,
   default-indent, default-margin,
   default-okpo, default-city, default-ministry, default-organization,
-  structural-headings,
 )
 #import "style.typ": smk-style
 #import "title.typ": title-page
