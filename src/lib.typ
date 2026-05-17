@@ -1,5 +1,16 @@
-// smk-sto-004 — Typst-шаблон для оформления отчётов о лабораторных работах
-// по СМК СТО 004–2020 (МГУ им. Н.П. Огарёва).
+// smk-sto — Typst-шаблон для оформления учебной отчётности
+// в ФГБОУ ВО «МГУ им. Н.П. Огарёва»:
+//
+//   • отчёт о лабораторной работе — СМК СТО 004–2020 (`lab-report`);
+//   • отчёт о практике           — СМК СТО 014–2025 (`practice-report`).
+//
+// Подключение:
+//
+//   #import "@preview/smk-sto:0.2.0": *
+//
+//   #show: lab-report.with(...)       // для лабораторной работы
+//   // или
+//   #show: practice-report.with(...)  // для отчёта о практике
 
 #import "constants.typ": (
   default-font, default-text-size, default-small-size,
@@ -7,82 +18,24 @@
   default-okpo, default-city, default-ministry, default-organization,
 )
 #import "style.typ": smk-style
-#import "title.typ": title-page
 #import "utils.typ": (
-  enum-letter, sign-field, format-designation,
+  enum-letter, sign-field, where-block,
   table-label, table-continuation, nbsp-name,
 )
 #import "appendix.typ": appendix
 #import "diagram.typ": diagram, node, edge
 
-// Главный show-rule. Применяется так:
-//
-//   #show: lab-report.with(
-//     work-number: 1,
-//     title: "Измерение в цепях постоянного тока",
-//     discipline: "Поверка средств измерений электрических величин",
-//     institute: "Институт электроники и светотехники",
-//     department: "Кафедра метрологии, стандартизации и сертификации",
-//     author: (name: "И.И. Иванов",
-//              direction: "27.03.01 Стандартизация и метрология"),
-//     supervisor: (name: "П.П. Петров",
-//                  position: "канд. техн. наук, доц."),
-//     designation: (direction: "27.03.01", variant: "08"),
-//   )
-//
-//   = Цель работы
-//   ...
-//
-#let lab-report(
-  // Контент титульного листа.
-  ministry: default-ministry,
-  organization: default-organization,
-  institute: none,
-  department: none,
-  work-number: none,
-  discipline: none,
-  title: none,
-  author: none,
-  supervisor: none,
-  designation: none,
-  city: default-city,
-  year: auto,
-  // Параметры оформления.
-  text-size: default-text-size,
-  small-size: default-small-size,
-  indent: default-indent,
-  margin: default-margin,
-  font: default-font,
-  hide-title: false,
-  add-pagebreaks: true,
-  body,
-) = {
-  show: smk-style.with(
-    text-size: text-size,
-    small-size: small-size,
-    indent: indent,
-    margin: margin,
-    font: font,
-    add-pagebreaks: add-pagebreaks,
-  )
+// Лабораторные работы (СМК СТО 004–2020).
+#import "lab/report.typ": lab-report
+#import "lab/title.typ": lab-report-title-page
+#import "lab/designation.typ": lab-report-designation
 
-  if not hide-title {
-    title-page(
-      ministry: ministry,
-      organization: organization,
-      institute: institute,
-      department: department,
-      work-number: work-number,
-      discipline: discipline,
-      title: title,
-      author: author,
-      supervisor: supervisor,
-      designation: designation,
-      city: city,
-      year: year,
-    )
-    pagebreak(weak: true)
-  }
-
-  body
-}
+// Отчёт о практике (СМК СТО 014–2025).
+#import "practice/report.typ": practice-report
+#import "practice/title.typ": practice-report-title-page
+#import "practice/designation.typ": practice-report-designation
+// Сопровождающие формы (Приложения Б, Г, Д, Ж к СТО 014–2025).
+#import "practice/task.typ": practice-report-task
+#import "practice/diary.typ": practice-report-diary
+#import "practice/survey.typ": practice-report-survey
+#import "practice/feedback.typ": practice-report-feedback

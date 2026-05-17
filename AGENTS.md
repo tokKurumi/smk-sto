@@ -1,23 +1,36 @@
-# Working with the `smk-sto-004` Typst template
+# Working with the `smk-sto` Typst template
 
 > **Note for the AI:** the document you are producing is in **Russian**.
 > All headings, body text, captions, list items, table headers, formula
 > explanations, and bibliography titles MUST be written in Russian. Only
 > identifiers (label names, file names, package directives) stay in Latin.
 
-This package implements **СМК СТО 004–2020** of MGU im. N.P. Ogarev — the
-internal standard for lab-work reports («Правила оформления отчётов о
-лабораторных работах»). All page sizes, margins, fonts, heading rules,
-list markers, figure/table captions, formula numbering, appendix lettering
-and the title page (Приложение А) are already wired up. **Your job is to
-write the report — not to re-style it.**
+This package implements **two** internal standards of MGU im. N.P. Ogarev:
 
-## How to start a report
+- **СМК СТО 004–2020** — lab-work reports («Правила оформления отчётов
+  о лабораторных работах»). Show rule: `lab-report`.
+- **СМК СТО 014–2025** — practice reports («Практика обучающихся высшего
+  образования. Общие требования, правила оформления отчётности»). Show
+  rule: `practice-report`.
 
-A minimal `report.typ` is:
+The standards share ~90% of formatting rules (page size, margins, fonts,
+heading numbering, lists, captions, formulas, appendices), so most of the
+internals are shared. The two flavors differ in their **title page** and
+**document designation** (`ЛР–…` vs `ОП–…`).
+
+**Public API uses a clear prefix:** every lab-related export starts with
+`lab-report`, every practice-related export starts with `practice-report`.
+Pick the right family for the document you are writing — they are not
+interchangeable.
+
+**Your job is to write the report — not to re-style it.**
+
+## How to start a lab-work report (СТО 004–2020)
+
+A minimal `report.typ`:
 
 ```typst
-#import "@preview/smk-sto-004:0.1.0": *
+#import "@preview/smk-sto:0.2.0": *
 
 #show: lab-report.with(
   institute: "Институт электроники и светотехники",
@@ -26,19 +39,62 @@ A minimal `report.typ` is:
   discipline: "Поверка средств измерений электрических величин",
   title: "Измерение в цепях постоянного тока",
   author: (
-    name: "И.О. Фамилия",
+    name: "И. И. Иванов",
     direction: "27.03.01 Стандартизация и метрология",
   ),
   supervisor: (
-    name: "И.О. Фамилия",
+    name: "П. П. Петров",
     position: "канд. техн. наук, доц.",
   ),
-  designation: (direction: "27.03.01", variant: "08"),
+  designation: (direction: "27.03.01", variant: "01"),
 )
 
 = Цель работы
 Текст...
 ```
+
+## How to start a practice report (СТО 014–2025)
+
+```typst
+#import "@preview/smk-sto:0.2.0": *
+
+#show: practice-report.with(
+  institute: "Институт электроники и светотехники",
+  department: "Кафедра метрологии, стандартизации и сертификации",
+  kind: "учебная",                          // вид: «учебная» / «производственная»
+  practice-type: "ознакомительная",         // тип в соответствии с ОПОП ВО
+  author: (
+    name: "И. И. Иванов",
+    course: 1,
+    group: "101М",
+  ),
+  direction: (code: "27.03.01", name: "Стандартизация и метрология"),
+  profile: "Метрология и метрологическое обеспечение",
+  location: "г. Саранск, ФГБОУ ВО «МГУ им. Н. П. Огарёва», кафедра ...",
+  period: (start: "08.09.2025", end: "27.12.2025"),
+  designation: (kind: "У", direction: "27.03.01", variant: "01"),
+  supervisor-uni: (
+    name: "П. П. Петров",
+    position: "канд. техн. наук, доц.",
+  ),
+  year: 2025,
+)
+
+= Введение <s>
+Текст...
+```
+
+`kind` is the *вид* practice (учебная / производственная). `practice-type`
+is the more specific *тип* per ОПОП ВО (ознакомительная,
+научно-исследовательская работа, преддипломная, педагогическая, и т. п.).
+The designation kind code is `У` for учебная, `П` for производственная.
+
+> **Personal data:** use neutral placeholders (`И. И. Иванов`,
+> `П. П. Петров`) when you assemble an example or template — never paste
+> real student or supervisor names unless the user explicitly provides
+> them.
+
+## Defaults shared by both reports
 
 Everything except the obvious user data has sensible defaults pulled from
 the standard:
@@ -54,39 +110,78 @@ Only override these if the user explicitly asks.
 
 ## API surface
 
-Imported with `#import "@preview/smk-sto-004:0.1.0": *`:
+Imported with `#import "@preview/smk-sto:0.2.0": *`:
+
+**Lab reports (СТО 004–2020):**
 
 - `lab-report(..., body)` — main show rule. Use as `#show: lab-report.with(...)`.
+- `lab-report-title-page(...)` — standalone renderer for the title page
+  (Приложение А). Use only if you need to detach the title from
+  `lab-report`; normally call `lab-report` and the title comes for free.
+- `lab-report-designation(...)` — formats «ЛР–02069964–DDD–NN–YY» from
+  `(direction: ..., variant: ...)`.
+
+**Practice reports (СТО 014–2025):**
+
+- `practice-report(..., body)` — main show rule. Use as `#show: practice-report.with(...)`.
+- `practice-report-title-page(...)` — standalone renderer for the title
+  page (Приложение В).
+- `practice-report-designation(...)` — formats
+  «ОП–02069964–В–DD.NN.NN–NN–YYYY» from `(kind: "У", direction: "...",
+  variant: "...")`.
+- `practice-report-task(...)` — задание на практику (Приложение Б):
+  the practice assignment form. Each form starts on a new page and uses
+  its own page numbering.
+- `practice-report-diary(...)` — дневник практики (Приложение Г):
+  table of practice entries «Дата / Содержание / Замечания».
+- `practice-report-survey(...)` — анкета обучающегося (Приложение Д):
+  11-question questionnaire with checkboxes and 1–5 ratings. Pass
+  selected answers as `answers: (q1: "да", q7: 5, ...)`.
+- `practice-report-feedback(...)` — отзыв руководителя от профильной
+  организации (Приложение Ж): six numbered sections + signature.
+
+**Common helpers (apply to both flavors):**
+
 - `appendix` — section rule. After `#show: appendix`, every `= Heading`
   becomes a numbered appendix (А, Б, В, …). Figures, tables and equations
   are renumbered relative to the appendix letter.
-- `sign-field(position, name)` — pre-formatted signature row used on the
-  title page. You normally don't call it directly.
-- `format-designation(...)` — turns `(direction: ..., variant: ...)` into
-  the canonical «ЛР–02069964–DDD–NN–YY» string.
+- `where-block(...)` — formats the «где …»-block under a formula with a
+  hanging indent (СТО 8.4.2). Each pair is `(symbol, description)`:
+  ```typst
+  #where-block(
+    ($U$, [напряжение, В]),
+    ($I$, [сила тока, А]),
+  )
+  ```
+  Always prefer this helper over manual `\` line breaks — it produces a
+  properly aligned column.
 - `enum-letter(n)` — Russian alphabetic enum marker (а, б, в, …); use
   `#set enum(numbering: enum-letter)` when the user lists points «а)»,
   «б)», «в)» per СТО 8.1.5.
+- `sign-field(position, name)` — pre-formatted signature row used on the
+  title pages. You normally don't call it directly.
 - `table-label(num: ..., caption: ...)` — letter-spaced «Т а б л и ц а N – ...»
   label, useful for manual table headings (the `#figure(...)` path uses it
   automatically).
 - `table-continuation(num)` — produces «Продолжение таблицы N» (pass
   `kind: "Окончание"` for the last fragment).
+- `diagram`, `node`, `edge` — re-exported from `fletcher` for block
+  diagrams.
 
-## What `lab-report` already enforces
+## What `lab-report` / `practice-report` already enforce
 
 You do **not** need to set any of these manually — adding extra `#set`
 rules will only fight the template:
 
 - A4 paper, margins 30 / 15 / 20 / 20 mm (left/right/top/bottom).
 - Times New Roman 14 pt, 1.5-line spacing, paragraph indent 1.25 cm.
-- Hyphenation disabled (per СТО 8.1.5: «Переносы слов в заголовках не
-  допускаются» — and overall the standard expects whole words).
+- Hyphenation disabled (СТО 004 8.1.5: «Переносы слов в заголовках не
+  допускаются»; СТО 014 5.7 allows hyphenation outside headings — the
+  template keeps the stricter labs behavior for both).
 - Headings: numbered `1`, `1.1`, `1.1.1`, bold, indented by 1.25 cm,
   followed by one blank line; level-1 headings start a new page.
-- Structural headings (Введение, Заключение, Перечень сокращений и
-  обозначений, …) are marked with the `<s>` label — they're centered,
-  uppercased, un-numbered, and don't advance the chapter counter.
+- Structural headings — marked with the `<s>` label, centered, uppercased,
+  un-numbered, do not advance the chapter counter.
   Auto-generated unnumbered headings (`#outline()`, `#bibliography(title: ...)`)
   are styled the same way without needing the label.
 - Lists: marker «–», nested indent 1.25 cm.
@@ -184,15 +279,18 @@ not need to add `<s>` to them.
 
 $ R = U / I $ <eq:ohm>
 
-где $U$ — напряжение, В; \
-    $I$ — сила тока, А.
+#where-block(
+  ($U$, [напряжение, В]),
+  ($I$, [сила тока, А]),
+)
 
 Из формулы @eq:ohm видно, что ...
 ```
 
-The «где»-block is plain text — write it the way the standard prescribes
-(СТО 8.4.2): start with «где» on the abzac, comma-separate items, give
-each variable on a new line.
+The standard requires (СТО 8.4.2): start with «где» on the abzac, no
+colon after, each variable on a new line. Use `where-block(...)` — it
+produces the properly aligned column. Do **not** glue lines with `\` and
+trailing spaces — that breaks alignment.
 
 ### Block diagrams (boxes + arrows)
 
@@ -202,12 +300,12 @@ each variable on a new line.
 ```typst
 #figure(
   diagram(
-    node((0, 0), [contur2 (app)], fill: rgb("#dae8fc")),
-    node((2, 0), [contur2_demos],  fill: rgb("#d5e8d4")),
-    node((1, 1), [contur2_lib],    fill: rgb("#ffe6cc")),
-    node((3, 1), [tests (GTest)],  fill: rgb("#f8cecc")),
-    edge((0, 0), (1, 1), "->", [link]),
-    edge((2, 0), (1, 1), "->", [link]),
+    node((0, 0), [Модуль А],   fill: rgb("#dae8fc")),
+    node((2, 0), [Модуль Б],   fill: rgb("#d5e8d4")),
+    node((1, 1), [Ядро],       fill: rgb("#ffe6cc")),
+    node((3, 1), [Тесты],      fill: rgb("#f8cecc")),
+    edge((0, 0), (1, 1), "->", [use]),
+    edge((2, 0), (1, 1), "->", [use]),
     edge((3, 1), (1, 1), "->", [test]),
   ),
   caption: [Граф зависимостей модулей],
@@ -260,13 +358,19 @@ inside become «А.1», «А.2», «(А.1)», etc.
 
 ## Things to avoid
 
+- **Do not** mix the two families. A lab report uses `lab-report` (with
+  `work-number`, `discipline`, `title`); a practice report uses
+  `practice-report` (with `kind`, `practice-type`, `period`,
+  `direction`, `profile`, `location`). Sending lab-specific fields to
+  `practice-report` (or vice versa) is a usage error.
 - **Do not** add manual `#set page(...)`, `#set text(...)`, `#set par(...)`
   unless the user asks for a specific deviation. The template's defaults
   are the standard.
 - **Do not** number structural sections (Введение, Заключение, …) —
   they are by definition non-numbered. Tag them with `<s>` and the
   template handles the rest.
-- **Do not** add the title page manually — `lab-report` emits it.
+- **Do not** add the title page manually — `lab-report` / `practice-report`
+  emit it.
 - **Do not** use em dash «—» for «Рисунок N – ...» / «Таблица N – ...»
   separators — the template already uses en dash «–» per the standard.
   In running prose either dash is fine; match what the user already
@@ -274,8 +378,13 @@ inside become «А.1», «А.2», «(А.1)», etc.
 - **Do not** rename the appendix supplement — the value `[Приложение]`
   is what the outline rule keys on to render «Приложение А Название» in
   the table of contents.
+- **Do not** paste real personal data (names, group numbers, university
+  staff) into examples or templates — use `И. И. Иванов`, `П. П. Петров`,
+  generic group codes like `101М`, etc.
 
-## Quick reference: standard sections of a lab report (СТО 7.1)
+## Quick reference: standard sections
+
+### Lab report (СТО 004 п. 7.1)
 
 A complete report has, in order:
 
@@ -285,24 +394,24 @@ A complete report has, in order:
 4. `= Результаты измерений (наблюдений)`
 5. `= Обработка экспериментальных данных и оценка погрешностей`
 6. `= Анализ результатов и выводы` (sometimes labeled `= Выводы` or
-   `= Заключение`)
+   `= Заключение <s>`)
 7. Optional `#bibliography(...)` titled «Список использованных источников»
 8. Optional `#show: appendix` followed by appendix headings
 
 `#outline()` may be placed right after the title-page block to produce
 «Содержание».
 
-## File layout for a user project
+### Practice report (СТО 014 п. 5.1.1)
 
-```
-report/
-├── main.typ           ← the .typ file you edit
-├── references.bib     ← optional, for the bibliography
-└── assets/            ← images, plots
-```
+A complete report has:
 
-Compile with:
+1. Title page (auto, from `practice-report.with(...)`)
+2. Main part — chapters covering the work done per the practice task
+3. `= Заключение <s>` — summary of results
+4. Optional `#bibliography(...)` titled «Список использованных источников»
+5. Optional appendices via `#show: appendix`
 
-```
-typst compile main.typ
-```
+Additional documents accompany the report (с собственной нумерацией):
+practice task, diary, student survey, supervisor feedback, confirmation
+from the host organization. Their generators will be added in future
+versions.

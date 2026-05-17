@@ -1,9 +1,34 @@
-// Утилиты: алфавитная нумерация, обозначение ЛР, подпись.
+// Общие утилиты: алфавитная нумерация, подпись, «где»-блок, оформление
+// продолжений таблиц. Шаблон-специфичные обозначения (ЛР, ОП) живут в
+// соответствующих подпакетах (lab/, practice/).
 
 #let cyrillic-letters = (
-  "а", "б", "в", "г", "д", "е", "ж", "и", "к", "л",
-  "м", "н", "п", "р", "с", "т", "у", "ф", "х", "ц",
-  "ч", "ш", "щ", "э", "ю", "я",
+  "а",
+  "б",
+  "в",
+  "г",
+  "д",
+  "е",
+  "ж",
+  "и",
+  "к",
+  "л",
+  "м",
+  "н",
+  "п",
+  "р",
+  "с",
+  "т",
+  "у",
+  "ф",
+  "х",
+  "ц",
+  "ч",
+  "ш",
+  "щ",
+  "э",
+  "ю",
+  "я",
 )
 
 // Перечисление вида «а)», «б)», ... согласно ГОСТ 2.105 и СТО.
@@ -54,24 +79,45 @@
   ]
 }
 
-// Обозначение лабораторной работы: ЛР–02069964–DDD–NN–YY
-// designation: либо строка целиком, либо словарь
-//   (direction: "27.03.01", variant: "08", year: 24, okpo: "02069964")
-#let format-designation(designation, default-okpo: "02069964", current-year: none) = {
-  if designation == none { return none }
-  if type(designation) == str { return designation }
-  if type(designation) == dictionary {
-    let direction = designation.at("direction", default: none)
-    let variant = designation.at("variant", default: none)
-    let year = designation.at("year", default: current-year)
-    let okpo = designation.at("okpo", default: default-okpo)
-    if type(year) == int { year = str(calc.rem(year, 100)) }
-    if type(variant) == int { variant = str(variant) }
-    if type(variant) == str and variant.len() == 1 { variant = "0" + variant }
-    let parts = ("ЛР", okpo, direction, variant, year).filter(p => p != none)
-    return parts.join("–")
+// «где»-блок после формулы по СТО 8.4.2: первая строка с абзаца со слова
+// «где» без двоеточия после него; каждая переменная — на новой строке;
+// все переменные выровнены под первой.
+//
+//   #where-block(
+//     ($U$, [напряжение, В]),
+//     ($I$, [сила тока, А]),
+//   )
+//
+// рендерится как:
+//
+//       где U — напряжение, В;
+//           I — сила тока, А.
+//
+// Параметр `lead` — слово-вводное (по умолчанию «где»); `separator` —
+// символ между переменной и её описанием (по умолчанию «–» с пробелами).
+#let where-block(..items, lead: [где], separator: [ – ]) = {
+  let items = items.pos()
+  if items.len() == 0 { return [] }
+  set par(first-line-indent: 0pt, justify: false)
+  // Ширина «где » для висячего отступа.
+  context {
+    let lead-width = measure([#lead#h(0.5em)]).width
+    let last = items.len() - 1
+    let rows = items
+      .enumerate()
+      .map(((i, pair)) => {
+        let (sym, desc) = pair
+        let punctuation = if i == last { [.] } else { [;] }
+        let head = if i == 0 {
+          [#lead#h(0.5em)#sym]
+        } else {
+          [#h(lead-width)#sym]
+        }
+        ([#head#separator#desc#punctuation],)
+      })
+      .flatten()
+    pad(left: 1.25cm, stack(spacing: 0.35em, ..rows))
   }
-  panic("Некорректный тип поля designation: ожидалась строка или словарь")
 }
 
 // Разрядка букв «Т а б л и ц а» по СТО 8.6.5 — интервал 1,6 пт.

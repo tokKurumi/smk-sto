@@ -1,12 +1,13 @@
 // Титульный лист отчёта о лабораторной работе.
 // Форма — Приложение А к СМК СТО 004–2020.
 
-#import "constants.typ": (
+#import "../constants.typ": (
   default-city, default-ministry, default-organization, default-okpo,
 )
-#import "utils.typ": format-designation, sign-field
+#import "../utils.typ": sign-field
+#import "designation.typ": lab-report-designation
 
-#let title-page(
+#let lab-report-title-page(
   ministry: default-ministry,
   organization: default-organization,
   institute: none,
@@ -62,7 +63,7 @@
     if type(work-number) == int { str(work-number) } else { work-number }
   } else { none }
 
-  let desig = format-designation(
+  let desig = lab-report-designation(
     designation,
     default-okpo: default-okpo,
     current-year: year,
