@@ -1,0 +1,66 @@
+name: Release
+
+# Меняешь VERSION, пушишь в master — выкатывается релиз. Всё.
+
+on:
+  push:
+    branches: [master]
+    paths: [VERSION]
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Read VERSION
+        id: ver
+        run: |
+          version=$(tr -d '[:space:]' < VERSION)
+          if ! echo "$version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
+            echo "::error::VERSION must be semver (X.Y.Z), got: '$version'"
+            exit 1
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=v$version"   >> "$GITHUB_OUTPUT"
+
+      - name: Stage and archive package
+        id: build
+        run: |
+          set -euo pipefail
+          version="${{ steps.ver.outputs.version }}"
+          stage="smk-sto-${version}"
+
+          python3 - <<'PY'
+          import tomllib, pathlib
+          cfg = tomllib.loads(pathlib.Path("typst.toml").read_text())
+          excludes = list(cfg["package"].get("exclude", []))
+          excludes += [".git", ".github", ".gitignore", "VERSION", "dist", ".rsync-exclude"]
+          pathlib.Path(".rsync-exclude").write_text("\n".join(excludes) + "\n")
+          PY
+
+          mkdir -p "dist/${stage}"
+          rsync -a --exclude-from=.rsync-exclude ./ "dist/${stage}/"
+          sed -i -E "s/^version[[:space:]]*=.*/version = \"${version}\"/" "dist/${stage}/typst.toml"
+
+          (cd dist && tar -czf "${stage}.tar.gz" "${stage}")
+          (cd dist && zip -qr  "${stage}.zip"    "${stage}")
+
+          {
+            echo "tar=dist/${stage}.tar.gz"
+            echo "zip=dist/${stage}.zip"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.ver.outputs.tag }}
+          name: ${{ steps.ver.outputs.tag }}
+          target_commitish: ${{ github.sha }}
+          generate_release_notes: true
+          files: |
+            ${{ steps.build.outputs.tar }}
+            ${{ steps.build.outputs.zip }}
